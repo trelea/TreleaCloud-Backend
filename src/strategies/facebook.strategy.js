@@ -1,6 +1,6 @@
 const passport = require('passport');
 const FacebookStrategy = require('passport-facebook').Strategy;
-const facebookUser = require('../models/user.facebook.model');
+const FacebookUser = require('../models/user.facebook.model');
 
 
 passport.serializeUser((user, done) => done(null, user));
@@ -15,8 +15,8 @@ passport.use(
         state: true
     }, 
     async (accessToken, refreshToken, profile, done) => {
-        const user = await facebookUser.find({ profile }).exec();
-        if (user.length === 0) await facebookUser.create({ profile });
-        done(null, { profile });
+        let facebookUser = await FacebookUser.find({ profile }).exec();
+        if (facebookUser.length === 0) facebookUser = await (await FacebookUser.create({ profile })).save(); 
+        done(null, facebookUser);
     })
 );

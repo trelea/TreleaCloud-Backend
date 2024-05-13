@@ -7,12 +7,19 @@ const signupController = require('../controllers/auth/signup.controller');
 const signinController = require('../controllers/auth/signin.controller');
 const signoutController = require('../controllers/auth/signout.controller');
 const isAuthorized = require('../services/authorized.service');
+const signupValidation = require('../config/signup.body.validation');
+const { checkStatus } = require('../controllers/auth/status.controller');
+
+
+// CHECK STATUS
+router.get('/status', isAuthorized, checkStatus)
 
 
 // LOCAL AUTHENTICATION
-router.post('/signup',  signupController);
+router.post('/signup',  signupValidation, signupController);
 router.post('/signin',  passport.authenticate('local'), signinController);
 router.post('/signout', isAuthorized, signoutController);
+
 
 
 // GOOGLE AUTHENTICATION
@@ -27,6 +34,7 @@ router.get(
 );
 
 
+
 // FACEBOOK AUTHENTICATION
 router.get(
     '/facebook',
@@ -37,6 +45,7 @@ router.get(
     passport.authenticate('facebook', { failureRedirect: '/' }), 
     (req, res) => { res.status(200).json(req.session.passport.user).end() }
 );
+
 
 
 // GITHUB AUTHENTICATION 

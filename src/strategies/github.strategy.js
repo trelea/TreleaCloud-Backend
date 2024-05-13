@@ -9,8 +9,8 @@ passport.use(
         callbackURL: 'https://trelea-dev.serveo.net/api/v1/auth/github/callback'
     },
     async (accessToken, refreshToken, profile, done) => {
-        const githubUser = await GithubUser.find({ profile })
-        if (githubUser.length === 0) await GithubUser.create({ profile })
-        done(null, { profile })
+        let githubUser = await GithubUser.find({ profile }).exec();
+        if (githubUser.length === 0) githubUser = await (await GithubUser.create({ profile })).save();
+        done(null, githubUser[0]);
     })
 );

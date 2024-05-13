@@ -13,13 +13,11 @@ passport.use(
         usernameField: 'user_email',
         passwordField: 'user_password',
     }, async (user_email, user_password, done) => {
-        
         const user = await User.findOne({ user_email }).exec();
 
         if (!user?.user_email) return done(null, false, { msg: "Invalid Credentials" });
         if (!bycrypt.compareSync(user_password, user.user_password)) return done(null, false, { msg: "Invalid Credentials" });
 
-        const { _id, user_name } = user;
-        done(null, { _id, user_name });
+        done(null, user);
     })
 );

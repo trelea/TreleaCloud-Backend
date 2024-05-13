@@ -1,6 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const googleUser = require('../models/user.google.model');
+const GoogleUser = require('../models/user.google.model');
 
 
 passport.serializeUser((user, done) => done(null, user));
@@ -14,8 +14,8 @@ passport.use(
         callbackURL: 'http://trelea-dev.serveo.net/api/v1/auth/google/callback'
     },
     async (accessToken, refreshToken, profile, done) => {
-        const user = await googleUser.find({ profile }).exec()
-        if (user.length === 0) await googleUser.create({ profile })
-        done(null, { profile })
+        let googleUser = await GoogleUser.find({ profile }).exec();
+        if (googleUser.length === 0) googleUser = await (await GoogleUser.create({ profile })).save();
+        done(null, googleUser);
     })
 );
