@@ -1,4 +1,4 @@
-const { Client, ConnectToBucket } = require('../../services/mongo.files.service');
+const { Client, CreateBucket } = require('../../services/mongo.files.service');
 const path = require('node:path');
 const { v4 } = require('uuid');
 const fs = require('node:fs');
@@ -6,7 +6,7 @@ const fs = require('node:fs');
 
 
 const uploadFile = async (req, res, next) => {
-    if (!req?.files?.file) return res.status(204).json({}).end();
+    if (!req?.files?.file) return res.status(204).json({ msg: 'No file provided' }).end();
 
     const originalFileName = req.files.file.name;
 
@@ -16,20 +16,21 @@ const uploadFile = async (req, res, next) => {
         (err) => { if (err) { return res.status(400).json(err).end() }}
     );
 
-    ConnectToBucket()
+    CreateBucket()
         .then(bucket => {
             fs.createReadStream(path.resolve(__dirname, '..', '..', '..', 'cacheFiles', req.files.file.name))
                 .pipe(bucket.openUploadStream(originalFileName, {
                     metadata: {
+                        private: true,
                         user: {
                             $ref: (req?.user?.profile?.provider) ? `${req?.user?.profile?.provider}users` : 'users',
                             $id: req.user._id 
                         }
                     }
                 }))
-                .once('finish', async () => {
+                .once('finish', () => {
                     Client.close();
-                    return res.status(200).json(bucket.find({ msg: 'File on Cloud'})).end();
+                    return res.status(200).json({ msg: 'File on Cloud' }).end();
                 });
         });
 }
