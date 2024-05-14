@@ -9,8 +9,8 @@ const privateFilePriority = async (req, res, next) => {
         .then(async ({ files, chunks }) => {
             const file = await files.findOne({ _id: new ObjectId(req.params.id) });
             
-            if (file.metadata.user.oid === user.oid &&  file.metadata.user.collection === user.collection) {
-                const privateFile = await files.updateOne({ _id: new ObjectId(req.params.id) }, { $set: { metadata: { private: true }}});
+            if (file?.metadata?.user.oid === user.oid &&  file?.metadata?.user?.collection === user.collection) {
+                const privateFile = await files.updateOne({ _id: new ObjectId(req.params.id) }, { $set: { metadata: { private: true, user }}});
                 Client.close();
                 return res.status(200).json(privateFile).end();
             }

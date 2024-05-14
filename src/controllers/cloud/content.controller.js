@@ -7,7 +7,7 @@ const getCloudContent = async (req, res, next) => {
 
     ConnectToBucket()
         .then(async ({ files, chunks }) => {
-            const userFiles = await files.find({ metadata: { private: true, user } }).toArray();
+            const userFiles = await files.find({ 'metadata.user': user }).sort({ uploadDate: -1 }).toArray();
             Client.close();
 
             return res.status(200).json(userFiles).end();
