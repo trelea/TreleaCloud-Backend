@@ -3,7 +3,7 @@ const { ObjectId, DBRef } = require('mongodb');
 
 
 const privateFilePriority = async (req, res, next) => {
-    const user = new DBRef((req?.user?.profile?.provider) ? `${req?.user?.profile?.provider}users` : 'users', req.user._id);
+    const user = new DBRef((req?.user?.profile?.provider) ? `${req?.user?.profile?.provider}users` : 'users', req?.user?._id);
 
     ConnectToBucket()
         .then(async ({ files, chunks }) => {
@@ -16,7 +16,7 @@ const privateFilePriority = async (req, res, next) => {
             }
             
             Client.close();
-            return res.status(200).json({ msg: 'Invalid Operation' }).end();
+            return res.status(201).json({ msg: 'Invalid Operation' }).end();
         })
 }
 
