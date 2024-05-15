@@ -2,6 +2,7 @@ const { Client, CreateBucket } = require('../../services/mongo.files.service');
 const path = require('node:path');
 const { v4 } = require('uuid');
 const fs = require('node:fs');
+const { ObjectId, DBRef } = require('mongodb');
 
 
 const uploadFile = async (req, res, next) => {
@@ -11,26 +12,27 @@ const uploadFile = async (req, res, next) => {
 
     req.files.file.name = `${v4()}_${new Date().toISOString()}_${req.files.file.name}`;
     req.files.file.mv(
-        path.resolve(path.join(__dirname, '..', '..', '..', 'cache', 'storage', `${req.files.file.name}`)),
+        path.resolve(path.join(__dirname, '..', '..', '..', 'cache', 'storage', req.files.file.name)),
         (err) => { if (err) { return res.status(400).json(err).end() }}
     );
 
+    const user = new DBRef((req?.user?.profile?.provider) ? `${req?.user?.profile?.provider}users` : 'users', req?.user?._id);
+
     CreateBucket()
-        .then(bucket => {
-            fs.createReadStream(path.resolve(__dirname, '..', '..', '..', 'cache', 'storage', req.files.file.name))
-                .pipe(bucket.openUploadStream(originalFileName, {
-                    metadata: {
-                        private: true,
-                        user: {
-                            $ref: (req?.user?.profile?.provider) ? `${req?.user?.profile?.provider}users` : 'users',
-                            $id: req.user._id 
-                        }
-                    }
-                }))
+        .then(async ({ bucket, backupBucket }) => {
+            const _id = new ObjectId();
+
+            const stream = fs.createReadStream(path.resolve(__dirname, '..', '..', '..', 'cache', 'storage', req.files.file.name));
+
+            stream.pipe(backupBucket.openUploadStreamWithId(_id, req.files.file.name, { metadata: { originalFileName, user } }))
                 .once('finish', () => {
-                    Client.close();
-                    return res.status(200).json({ msg: 'File on Cloud' }).end();
+                    stream.pipe(bucket.openUploadStreamWithId(_id, originalFileName, { metadata: { private: true, user } }))
+                        .once('finish', () => {
+                            Client.close();
+                            return res.status(200).json({ msg: 'File on Cloud' }).end();
+                        });    
                 });
+            
         });
 }
 

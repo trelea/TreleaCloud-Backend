@@ -8,7 +8,7 @@ const downloadFile = async (req, res, next) => {
     const user = new DBRef((req?.user?.profile?.provider) ? `${req?.user?.profile?.provider}users` : 'users', req?.user?._id);
 
     ConnectToBucket()
-        .then(async ({ files, chunks }) => {
+        .then(async ({ files }) => {
             const file = await files.findOne({ _id: new ObjectId(req.params.id) });
 
             if (
@@ -32,7 +32,6 @@ const downloadFile = async (req, res, next) => {
                     });
             } else return res.status(201).json({ msg: 'Invalid Operation' }).end();
 
-            
         });
 }
 

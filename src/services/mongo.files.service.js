@@ -7,7 +7,10 @@ const Client = new MongoClient(process.env.MONGODB_URI);
 const CreateBucket = async () => {
     await Client.connect();
     const db = Client.db(process.env.MONGODB_DB);
-    return new GridFSBucket(db, { bucketName: 'usersfiles' }); 
+    return {
+        bucket: new GridFSBucket(db, { bucketName: 'usersfiles' }),
+        backupBucket: new GridFSBucket(db, { bucketName: 'usersfilesbackup' })
+    }
 }
 
 
@@ -16,7 +19,9 @@ const ConnectToBucket = async () => {
     const db = Client.db(process.env.MONGODB_DB);
     return {
         files: db.collection('usersfiles.files'),
-        chunks: db.collection('usersfiles.chunks')
+        chunks: db.collection('usersfiles.chunks'),
+        backupFiles: db.collection('usersfilesbackup.files'),
+        backupChunks: db.collection('usersfilesbackup.chunks'),
     }
 }
 
