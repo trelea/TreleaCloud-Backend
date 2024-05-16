@@ -1,4 +1,4 @@
-const { Client, CreateBucket } = require('../../services/mongo.files.service');
+const { Client, GridFSConnection } = require('../../services/mongo.files.service');
 const path = require('node:path');
 const { v4 } = require('uuid');
 const fs = require('node:fs');
@@ -18,7 +18,7 @@ const uploadFile = async (req, res, next) => {
 
     const user = new DBRef((req?.user?.profile?.provider) ? `${req?.user?.profile?.provider}users` : 'users', req?.user?._id);
 
-    CreateBucket()
+    GridFSConnection()
         .then(async ({ bucket, backupBucket }) => {
             const _id = new ObjectId();
 
@@ -27,12 +27,11 @@ const uploadFile = async (req, res, next) => {
             stream.pipe(backupBucket.openUploadStreamWithId(_id, req.files.file.name, { metadata: { originalFileName, user } }))
                 .once('finish', () => {
                     stream.pipe(bucket.openUploadStreamWithId(_id, originalFileName, { metadata: { private: true, user } }))
-                        .once('finish', () => {
-                            Client.close();
+                        .once('finish', async () => {
+                            await Client.close();
                             return res.status(200).json({ msg: 'File on Cloud' }).end();
                         });    
                 });
-            
         });
 }
 

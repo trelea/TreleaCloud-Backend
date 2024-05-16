@@ -4,7 +4,7 @@ const { MongoClient, GridFSBucket } = require('mongodb');
 const Client = new MongoClient(process.env.MONGODB_URI);
 
 
-const CreateBucket = async () => {
+const GridFSConnection = async () => {
     await Client.connect();
     const db = Client.db(process.env.MONGODB_DB);
     return {
@@ -14,16 +14,16 @@ const CreateBucket = async () => {
 }
 
 
-const ConnectToBucket = async () => {
-    await Client.connect();
-    const db = Client.db(process.env.MONGODB_DB);
-    return {
-        files: db.collection('usersfiles.files'),
-        chunks: db.collection('usersfiles.chunks'),
-        backupFiles: db.collection('usersfilesbackup.files'),
-        backupChunks: db.collection('usersfilesbackup.chunks'),
-    }
-}
+// const ConnectToBucket = async () => {
+//     await Client.connect();
+//     const db = Client.db(process.env.MONGODB_DB);
+//     return {
+//         files: db.collection('usersfiles.files'),
+//         chunks: db.collection('usersfiles.chunks'),
+//         backupFiles: db.collection('usersfilesbackup.files'),
+//         backupChunks: db.collection('usersfilesbackup.chunks'),
+//     }
+// }
 
 
-module.exports = { Client, CreateBucket, ConnectToBucket };
+module.exports = { Client, GridFSConnection };

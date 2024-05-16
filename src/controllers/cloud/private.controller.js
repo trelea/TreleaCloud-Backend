@@ -1,21 +1,21 @@
-const { Client, ConnectToBucket } = require('../../services/mongo.files.service');
+const { Client, GridFSConnection } = require('../../services/mongo.files.service');
 const { ObjectId, DBRef } = require('mongodb');
 
 
 const privateFilePriority = async (req, res, next) => {
     const user = new DBRef((req?.user?.profile?.provider) ? `${req?.user?.profile?.provider}users` : 'users', req?.user?._id);
 
-    ConnectToBucket()
-        .then(async ({ files }) => {
-            const file = await files.findOne({ _id: new ObjectId(req.params.id) });
+    GridFSConnection()
+        .then(async ({ bucket }) => {
+            const [ file ] = await bucket.find({ _id: new ObjectId(req.params.id) }).toArray();
             
-            if (file?.metadata?.user.oid === user.oid &&  file?.metadata?.user?.collection === user.collection) {
-                const privateFile = await files.updateOne({ _id: new ObjectId(req.params.id) }, { $set: { metadata: { private: true, user }}});
-                Client.close();
+            if (file && (file?.metadata?.user.oid === user.oid &&  file?.metadata?.user?.collection === user.collection)) {
+                const privateFile = await bucket.updateOne({ _id: new ObjectId(req.params.id) }, { $set: { metadata: { private: true, user }}});
+                await Client.close();
                 return res.status(200).json(privateFile).end();
             }
             
-            Client.close();
+            await Client.close();
             return res.status(201).json({ msg: 'Invalid Operation' }).end();
         })
 }
