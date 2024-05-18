@@ -16,6 +16,7 @@ const session = require('express-session');
 const passport = require('passport');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
+const helmet = require('helmet');
 
 
 
@@ -47,6 +48,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors(corsConfig))
 app.use(fileUpload())
 app.use(XPB);
+app.use(helmet.frameguard({ action: 'deny' }));
+app.use(helmet.xssFilter());
 app.use(session(sessionConfig));
 app.use(passport.initialize());
 app.use(passport.session());
