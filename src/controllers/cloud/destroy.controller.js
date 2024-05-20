@@ -30,7 +30,7 @@ const destroyFile = async (req, res, next) => {
 
             }
 
-            Client.close();
+            await Client.close();
             return res.status(201).json({ msg: 'Invalid Operation' }).end();
 
         });

@@ -65,13 +65,9 @@ app.use('*', (req, res, next) => { return res.status(404).json({ msg: 'Invalid R
 
 
 
-
-
 // BOOTSTRAPING
 app.listen(
     process.env.PORT, 
     process.env.SERVER, 
-    () => {
-        console.log(`Server ${process.env.SERVER} Running On Port: ${process.env.PORT}`);
-    }
+    () => console.log(`Server ${process.env.SERVER} Running On Port: ${process.env.PORT}`)
 );

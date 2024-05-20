@@ -10,9 +10,9 @@ const publicFilePriority = async (req, res, next) => {
             const [ file ] = await bucket.find({ _id: new ObjectId(req.params.id) }).toArray();
             
             if (file && (file?.metadata?.user?.oid === user.oid &&  file?.metadata?.user?.collection === user.collection)) {
-                const publicFile = await bucket.updateOne({ _id: new ObjectId(req.params.id) }, { $set: { metadata: { private: false, user }}});
+                await bucket.updateOne({ _id: new ObjectId(req.params.id) }, { $set: { metadata: { private: false, user }}});
                 await Client.close();
-                return res.status(200).json(publicFile).end();
+                return res.status(200).json({ msg: 'Updated' }).end();
             }
             
             await Client.close();
